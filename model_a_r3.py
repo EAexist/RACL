@@ -87,21 +87,16 @@ class MODEL(object):
                 # AE & OE Convolution
                 aspect_conv = tf.layers.conv1d(aspect_input[-1], self.opt.filter_num, self.opt.kernel_size, padding='SAME', activation=tf.nn.relu, name='aspect_conv')
                 opinion_conv = tf.layers.conv1d(opinion_input[-1], self.opt.filter_num, self.opt.kernel_size, padding='SAME', activation=tf.nn.relu, name='opinion_conv')
-                
-                #Relation R1
+
+                # Relation R1
                 aspect_see_opinion = tf.matmul(tf.nn.l2_normalize(aspect_conv, -1), tf.nn.l2_normalize(opinion_conv, -1), adjoint_b=True)
                 aspect_att_opinion = softmask_2d(aspect_see_opinion, self.word_mask)
+                aspect_inter = tf.concat([aspect_conv, tf.matmul(aspect_att_opinion, opinion_conv)], -1)
 
-                if(self.opt.drop_relation == 1):
-                  aspect_inter = aspect_conv                
-                  opinion_inter = opinion_conv
+                opinion_see_aspect = tf.matmul(tf.nn.l2_normalize(opinion_conv, -1), tf.nn.l2_normalize(aspect_conv, -1), adjoint_b=True)
+                opinion_att_aspect = softmask_2d(opinion_see_aspect, self.word_mask)
+                opinion_inter = tf.concat([opinion_conv, tf.matmul(opinion_att_aspect, aspect_conv)], -1)
 
-                else:
-                  aspect_inter = tf.concat([aspect_conv, tf.matmul(aspect_att_opinion, opinion_conv)], -1)
-                  opinion_see_aspect = tf.matmul(tf.nn.l2_normalize(opinion_conv, -1), tf.nn.l2_normalize(aspect_conv, -1), adjoint_b=True)
-                  opinion_att_aspect = softmask_2d(opinion_see_aspect, self.word_mask)
-                  opinion_inter = tf.concat([opinion_conv, tf.matmul(opinion_att_aspect, aspect_conv)], -1)
-                  
                 # AE & OE Prediction
                 aspect_p = layers.fully_connected(aspect_inter, self.opt.class_num, activation_fn=None, weights_initializer=self.Winit, biases_initializer=self.Winit, scope='aspect_p')
                 opinion_p = layers.fully_connected(opinion_inter, self.opt.class_num, activation_fn=None, weights_initializer=self.Winit, biases_initializer=self.Winit, scope='opinion_p')
@@ -120,14 +115,11 @@ class MODEL(object):
                 word_see_context = tf.matmul((query[-1]), tf.nn.l2_normalize(context_conv, -1), adjoint_b=True)  * position_att
                 word_att_context = softmask_2d(word_see_context, self.word_mask, scale=True)
 
-                # Relation R2 & R3
-                if(self.opt.drop_relation == 2):
-                  word_att_context += opinion_propagate  
-                elif(self.opt.drop_relation == 3):
-                  word_att_context += aspect_att_opinion      
-                else:               
-                  word_att_context += aspect_att_opinion + opinion_propagate
-
+                # Relation R3 : deactivated
+                # word_att_context += aspect_att_opinion + opinion_propagate
+                
+                # Relation R2
+                word_att_context += aspect_att_opinion
                 context_inter = (query[-1] + tf.matmul(word_att_context, context_conv)) # query + value
                 query.append(context_inter) # update query
 
@@ -181,7 +173,6 @@ class MODEL(object):
         # In training/validation, the sentiment masks are set to 1.0 only for the aspect terms.
         # In testing, the sentiment masks are set to 1.0 for all words (except padding ones).
         senti_mask = tf.tile(tf.expand_dims(self.senti_mask, -1), [1, 1, self.opt.class_num])
-        drop_r4 = (self.opt.drop_relation == 4)
 
         # Mask SC Probabilities
         sentiment_prob = tf.reshape(tf.cast(senti_mask, tf.float32) * sentiment_prob, [-1, self.opt.class_num])
@@ -224,12 +215,11 @@ class MODEL(object):
             else:
                 ckpt = tf.train.get_checkpoint_state('checkpoint/{}'.format(self.opt.task))
                 saver.restore(sess, ckpt.model_checkpoint_path)
-                
-            # R4 
-            train_sets = read_data(self.opt.train_path, self.word_id_mapping, self.opt.max_sentence_len, is_testing=drop_r4)
-            dev_sets = read_data(self.opt.dev_path, self.word_id_mapping, self.opt.max_sentence_len, is_testing=drop_r4)
+
+            train_sets = read_data(self.opt.train_path, self.word_id_mapping, self.opt.max_sentence_len)
+            dev_sets = read_data(self.opt.dev_path, self.word_id_mapping, self.opt.max_sentence_len)
             test_sets = read_data(self.opt.test_path, self.word_id_mapping, self.opt.max_sentence_len, is_testing=True)
-  
+
             aspect_f1_list = []
             opinion_f1_list = []
             sentiment_acc_list = []

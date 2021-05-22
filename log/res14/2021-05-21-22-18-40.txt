@@ -1,0 +1,40 @@
+-----------------------------------Parameters-----------------------------------
+>>> model: racl
+>>> task: res14
+>>> batch_size: 8
+>>> learning_rate: 0.0001
+>>> global_dim: 300
+>>> domain_dim: 100
+>>> kp1: 0.5
+>>> kp2: 0.5
+>>> reg_scale: 1e-05
+>>> filter_num: 256
+>>> class_num: 3
+>>> load: 0
+>>> max_sentence_len: 80
+>>> n_iter: 80
+>>> kernel_size: 3
+>>> hop_num: 4
+>>> warmup_iter: 60
+>>> emb_dim: 400
+>>> data_path: data/res14/
+>>> train_path: data/res14/train/
+>>> test_path: data/res14/test/
+>>> dev_path: data/res14/dev/
+
+
+>>> total parameter: 5074868
+
+-------------------------------------Iter0--------------------------------------
+Train: final loss=380.943289, aspect loss=191.966207, opinion loss=141.137203, sentiment loss=47.802109, reg loss=3776.946081, step=305
+Dev:   final loss=75.919443, aspect loss=31.699292, opinion loss=33.580443, sentiment loss=10.630790, reg loss=891.949745, step=305
+Dev:   aspect f1=0.3465, opinion f1=0.0000, sentiment acc==0.6649, sentiment f1==0.2662, ABSA f1==0.2332,
+Test:  aspect f1=0.3559, opinion f1=0.0000, sentiment acc==0.7200, sentiment f1==0.2791, ABSA f1==0.2543,
+Current Max Metrics Index : 0 Current Min Loss Index : 0 Epoch Time: 0m 12s
+
+-------------------------------------Iter1--------------------------------------
+Train: final loss=240.819973, aspect loss=97.825156, opinion loss=97.799931, sentiment loss=45.161014, reg loss=3387.188839, step=610
+Dev:   final loss=45.416323, aspect loss=18.789937, opinion loss=17.357314, sentiment loss=9.261441, reg loss=763.129086, step=610
+Dev:   aspect f1=0.6659, opinion f1=0.7296, sentiment acc==0.6325, sentiment f1==0.4063, ABSA f1==0.4175,
+Test:  aspect f1=0.7077, opinion f1=0.7112, sentiment acc==0.6840, sentiment f1==0.4173, ABSA f1==0.4819,
+Current Max Metrics Index : 0 Current Min Loss Index : 0 Epoch Time: 0m 8s

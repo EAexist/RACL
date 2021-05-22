@@ -1,4 +1,4 @@
-from model import *
+from model_a_r4 import *
 from utils import *
 import time
 import os
@@ -15,7 +15,7 @@ set_random_seed(SEED)
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--model', default='racl', type=str, help='model name')
-parser.add_argument('--drop_relation', default=0, type=int, help='drop relation')
+parser.add_argument('--disable', default='r4', type=str, help='disable relation')
 parser.add_argument('--task', default='res14', type=str, help='res14 lap14 res15')
 parser.add_argument('--batch_size', default=8, type=int, help='number of example per batch')
 parser.add_argument('--learning_rate', default=0.0001, type=float, help='learning rate')
